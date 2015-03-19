@@ -175,20 +175,45 @@ enum XmlParserSingleton{
  * @author JRANGEL
  */
 public class XmlParser extends CoreTemplate{
-    private XmlParser(){
+    private Object obj;
+    static XmlParser self = null;
+    private XmlParser(){//private to avoid initialization
         //CONSTRUCTOR
+    }
+    
+    public static synchronized XmlParser getInstance(){
+        if(self == null){
+            self = new XmlParser();
+        }
+        return self;
     }
     /**
      * Convert XML string to object
      * @param xmlString
      * @return 
      */
-    public static Object xmlToObject(String xmlString){
-
-        return (Object)XmlParserSingleton.INSTANCE.xmlToObject(xmlString);
+    public XmlParser xmlToObject(String xmlString){
+        obj = XmlParserSingleton.INSTANCE.xmlToObject(xmlString);
+        return self;
     }
-    public static void setIncludeAttributes(boolean includeAttr)
+    public XmlParser setIncludeAttributes(boolean includeAttr)
     {
         XmlParserSingleton.INSTANCE.includeAttributes(includeAttr);
+        return self; 
     }
+    public XmlParser getObjectForIndex(int indx){
+        ArrayList<Object> arrObj = (ArrayList<Object>)obj;
+        obj = arrObj.get(indx);
+        return self;
+    }
+    public XmlParser getObjectForKey(String key){
+        HashMap<String, Object> hashObj = (HashMap<String, Object>)obj;
+        obj = hashObj.get(key);
+        return self;
+    }
+    public Object toObject(){
+        
+        return obj;
+    }
+    
 }
