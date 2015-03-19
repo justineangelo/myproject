@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.tspi.helpers;
 import com.tspi.template.CoreTemplate;
 import java.io.ByteArrayInputStream;
@@ -36,6 +31,8 @@ enum XmlParserSingleton{
      * @return Object 
      */
     public Object xmlToObject(String xmlString){
+        CoreTemplate.logDebug("RAW " + xmlString);
+        CoreTemplate.logDebug("CLEANED " + this.cleanXmlString(xmlString));
         return this.xmlParse(this.cleanXmlString(xmlString));
     }
     /**
@@ -104,6 +101,7 @@ enum XmlParserSingleton{
      */
     private HashMap<String, Object> xmlParse(String toParse){
         HashMap<String, Object> parsedXml = null;
+        
         try {
             parsedXml = new HashMap<>();
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -112,23 +110,24 @@ enum XmlParserSingleton{
             Document doc = builder.parse(input);
             doc.normalize();
             String rootElement = doc.getDocumentElement().getNodeName();
-            System.out.println(doc.getDocumentElement().getNodeName());
+            CoreTemplate.logDebug(doc.getDocumentElement().getNodeName());
             parsedXml.put(rootElement, this.xmlElementParser(doc.getDocumentElement()));
-            System.out.println(parsedXml.toString());
+            CoreTemplate.logDebug(parsedXml.toString());
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            System.out.println("Error Occured Parsing XML : " + e.getMessage());
+            CoreTemplate.logDebug("Error Occured Parsing XML : " + e.getMessage());
         }
         return parsedXml;
     }
     /**
      * Recursively parse element via tag and child nodes
+     * 
      * @param obj
      * @return 
      */
     private Object xmlElementParser(Object obj){
         Object retObject;
         Element xmlElement = (Element) obj;    
-        if(xmlElement.getFirstChild().getNodeType() == Node.TEXT_NODE){
+        if(xmlElement.hasChildNodes() && xmlElement.getFirstChild().getNodeType() == Node.TEXT_NODE){
             if(xmlElement.getFirstChild().getNodeValue()!=null){
                 retObject = xmlElement.getFirstChild().getNodeValue();  
             }else{
@@ -147,23 +146,14 @@ enum XmlParserSingleton{
                 }
                 storedString = nList.item(i).getNodeName();
             }
-            CoreTemplate.logDebug("node name " + nodeStore.toString());
             ArrayList<Object> arrContent = new ArrayList<>();
-            for (int i = 0; i < nList.getLength(); i++) {
-                
-                Object objFromParser;
-                if(!nList.item(i).hasChildNodes()){
-                    objFromParser = "";
-                }
-                else{
-                    objFromParser = this.xmlElementParser(nList.item(i));
-                }
-                if(nodeStore.contains(nList.item(i).getNodeName())){
-                    arrContent.add(objFromParser);
+            for (int i = 0; i < nList.getLength(); i++) {           
+                if(nodeStore.contains(nList.item(i).getNodeName())){//for array
+                    arrContent.add(this.xmlElementParser(nList.item(i)));
                     elMap.put(nList.item(i).getNodeName(), arrContent);
                 }
-                else{
-                    elMap.put(nList.item(i).getNodeName(), objFromParser);
+                else{//fro mapping
+                    elMap.put(nList.item(i).getNodeName(), this.xmlElementParser(nList.item(i)));
                 }
             } 
             //this will add attributes
