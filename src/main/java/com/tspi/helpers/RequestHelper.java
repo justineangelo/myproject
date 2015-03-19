@@ -151,7 +151,7 @@ public class RequestHelper extends CoreTemplate{
                         if(this.rp == RequestProperty.REST){
                             returnObject = JSONValue.parse(outString);
                         }else if (this.rp == RequestProperty.SOAP) {
-                            returnObject = XmlParser.xmlToObject(outString);
+                            returnObject = XmlParser.getInstance().xmlToObject(outString).toObject();
                         }else{
                             returnObject = outString;
                         }
