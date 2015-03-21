@@ -195,6 +195,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "</QueryProfileResult>\n" +
 "</ns4:QueryProfileResultMsg>";
         String content = "";
+
         try {
             content = new String(Files.readAllBytes(Paths.get("/Users/Pro/Downloads/gist3080489-282155349da23b26c69ec64c559f90e1b60ee7f4/gistfile1.txt")));
 
@@ -208,12 +209,13 @@ public class MainController extends ControllerTemplate implements IMainControlle
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
         }
-        
+        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
         this.loggerDebug("RAW OBJECT " + xmlp.toObject());
         
         //for XML Composer
+
         String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
-        
+        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
         this.loggerDebug("COMPOSED XML " + composedXml);
         
 //        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());

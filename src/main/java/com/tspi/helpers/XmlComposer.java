@@ -121,8 +121,8 @@ enum XmlComposerSingleton{
  * @author JRANGEL
  */
 public class XmlComposer {
-    private String composedXmlString = "";
     private static final XmlComposer self = new XmlComposer();
+    private Long memoryCosumption = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L;
     private XmlComposer(){
         //Constructor
     }
@@ -153,8 +153,10 @@ public class XmlComposer {
      * @return returns the composed XML string of the Object 
      */
     public String objectToXml(Object xmlObject){
+        this.memoryCosumption = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L;
         return XmlComposerSingleton.INSTANCE.objectToXml(xmlObject);
     }
-    
-    
+    public long getTotalMemory(){
+        return ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L) - this.memoryCosumption;
+    }
 }
