@@ -191,13 +191,17 @@ public class MainController extends ControllerTemplate implements IMainControlle
         } catch (Exception e) {
             CoreTemplate.logDebug(e.getMessage());
         }
-        return JSONValue.toJSONString(XmlParser.getInstance().
+        XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(false).
-                xmlToObject(xmlString).
-                getObjectForKey("catalog").
-                getObjectForKey("book").
-                getObjectForIndex(10).
-                toObject());
+                xmlToObject(content);
+        this.loggerDebug("XML parser Object " + xmlp.toObject());
+        if(xmlp.errrorOccurred()){
+            return xmlp.errorMsg();
+        }
+//        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());
+//        String secondStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(9).toObject());
+        
+        return xmlp.toObject().toString();
     }
     
     @RequestMapping(value = "/newTest", method = RequestMethod.GET)

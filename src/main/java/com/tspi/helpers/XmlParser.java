@@ -1,5 +1,4 @@
 package com.tspi.helpers;
-import com.tspi.template.CoreTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,23 +15,24 @@ import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 /**
- * A library/Helper for XML parsing attributes if attribute boolean is enabled will add to the existing child nodes 
+ * A library/Helper for XML parsing. 
  * 
  * @author JRANGEL
  */
 enum XmlParserSingleton{
     INSTANCE;
     private boolean includeAttr = false; 
-    
+    private boolean errorOccurred = false;
+    private String errorMsg = "";
     /**
      * 
      * @param xmlString
      * 
-     * @return Object 
+     * @return Returns an Object or null value 
      */
     public Object xmlToObject(String xmlString){
-        CoreTemplate.logDebug("RAW " + xmlString);
-        CoreTemplate.logDebug("CLEANED " + this.cleanXmlString(xmlString));
+        this.errorMsg = "";
+        this.errorOccurred = false;
         return this.xmlParse(this.cleanXmlString(xmlString));
     }
     /**
@@ -44,18 +44,33 @@ enum XmlParserSingleton{
         this.includeAttr = includeAttr;
     }
     /**
+     * 
+     * @return return true when error occurred is encountered
+     */
+    public boolean errorOccurred(){
+        return this.errorOccurred;
+    }
+    /**
+     * Error message for the current XML parsing
+     * 
+     * @return returns error message for the current parsing
+     */
+    public String errorMsg(){
+        return this.errorMsg;
+    }
+    /**
      * Cleans unnecessary string err
      * 
      * @param xmlString
      * @return String
      */
     private String cleanXmlString(String xmlString){
-        
+        //remove uncessary characters
         String cleanedXmlString = xmlString
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ")
                 .replaceAll("\t", " ")
-                .replaceAll("\\<\\?xml(.+?)\\?\\>", "")
+                .replaceAll("\\<\\?xml(.+?)\\?\\>", "")//replace the XML tag maybe not necessary though
                 .replaceAll("\\>( +?)\\<", "><")//replace spaces
                 .trim();
         //uncomment to use remove attributes
@@ -101,20 +116,19 @@ enum XmlParserSingleton{
      */
     private HashMap<String, Object> xmlParse(String toParse){
         HashMap<String, Object> parsedXml = null;
-        
         try {
-            parsedXml = new HashMap<>();
+            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             ByteArrayInputStream input =  new ByteArrayInputStream(toParse.getBytes("UTF-8"));
             Document doc = builder.parse(input);
             doc.normalize();
             String rootElement = doc.getDocumentElement().getNodeName();
-            CoreTemplate.logDebug(doc.getDocumentElement().getNodeName());
+            parsedXml = new HashMap<>();
             parsedXml.put(rootElement, this.xmlElementParser(doc.getDocumentElement()));
-            CoreTemplate.logDebug(parsedXml.toString());
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            CoreTemplate.logDebug("Error Occured Parsing XML : " + e.getMessage());
+            this.errorOccurred = true;
+            this.errorMsg = e.getMessage();
         }
         return parsedXml;
     }
@@ -170,17 +184,21 @@ enum XmlParserSingleton{
     }
 }
 /**
- * A library/Helper for XML parsing attributes if attribute boolean is enabled will add to the existing child nodes 
+ * A library/Helper for XML parsing; 
  * 
  * @author JRANGEL
  */
-public class XmlParser extends CoreTemplate{
+public class XmlParser{
     private Object obj;
-    static XmlParser self = null;
-    private XmlParser(){//private to avoid initialization
+    private static XmlParser self = null;
+    private XmlParser(){//prevent public access
         //CONSTRUCTOR
     }
-    
+    /**
+     * Lazy Initialization of the Singleton
+     * 
+     * @return returns the Instance of the XmlParser
+     */
     public static synchronized XmlParser getInstance(){
         if(self == null){
             self = new XmlParser();
@@ -188,32 +206,90 @@ public class XmlParser extends CoreTemplate{
         return self;
     }
     /**
+     * Does Error occurred during parsing?
+     * 
+     * @return returns true when error occurred during parsing
+     */
+    public boolean errrorOccurred(){
+        return XmlParserSingleton.INSTANCE.errorOccurred();
+    }
+    /**
+     * Error Description
+     * 
+     * @return returns Error message if error occurred
+     */
+    public String errorMsg(){
+        return XmlParserSingleton.INSTANCE.errorMsg();
+    }
+    /**
      * Convert XML string to object
+     * 
      * @param xmlString
-     * @return 
+     * @return returns the instance of the XmlParser
      */
     public XmlParser xmlToObject(String xmlString){
         obj = XmlParserSingleton.INSTANCE.xmlToObject(xmlString);
-        return self;
+        return this;
     }
+    /**
+     * Sets if should include attributes in the XML parsing
+     * 
+     * @param includeAttr
+     * @return returns the instance of the XmlParser
+     */
     public XmlParser setIncludeAttributes(boolean includeAttr)
     {
         XmlParserSingleton.INSTANCE.includeAttributes(includeAttr);
-        return self; 
+        return this; 
     }
-    public XmlParser getObjectForIndex(int indx){
-        ArrayList<Object> arrObj = (ArrayList<Object>)obj;
-        obj = arrObj.get(indx);
-        return self;
+    /**
+     * Get the object at index  and altering the current object
+     * 
+     * @param indx
+     * @return returns the instance of the XmlParser
+     */
+    public XmlParser getObjectAtIndex(int indx){
+        obj = ((ArrayList<Object>)obj).get(indx);
+        return this;
     }
+    /**
+     * Copy the object at index and not altering the current object
+     * 
+     * @param indx
+     * @return returns the instance of the XmlParser
+     */
+    public XmlParser copyObjectAtIndex(int indx){
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.obj = ((ArrayList<Object>)obj).get(indx);
+        return xmlParser;
+    }
+    /**
+     * Get the object for key  and altering the current object
+     * 
+     * @param key
+     * @return returns the instance of the XmlParser
+     */
     public XmlParser getObjectForKey(String key){
-        HashMap<String, Object> hashObj = (HashMap<String, Object>)obj;
-        obj = hashObj.get(key);
-        return self;
+        obj = ((HashMap<String, Object>)obj).get(key);
+        return this;
     }
+    /**
+     * Copy the object for key and not altering the current object
+     * 
+     * @param key
+     * @return returns the instance of the XmlParser
+     */
+    public XmlParser copyObjectForKey(String key){
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.obj = ((HashMap<String, Object>)obj).get(key);
+        return xmlParser;
+    }
+    /**
+     * Gets the Object value of the XmlParser
+     * 
+     * @return  returns the Object of the XmlParser
+     */
     public Object toObject(){
-        
         return obj;
     }
-    
 }
