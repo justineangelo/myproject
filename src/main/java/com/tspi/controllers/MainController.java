@@ -25,6 +25,7 @@ import org.json.simple.JSONValue;
 import org.apache.log4j.Logger;
 
 import com.tspi.helpers.XmlParser;
+import com.tspi.helpers.XmlComposer;
 import com.tspi.template.CoreTemplate;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -80,6 +81,10 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "      <title>Oberon's Legacy</title>\n" +
 "      <genre>Fantasy</genre>\n" +
 "      <price>5.95</price>\n" +
+"      <shit id=\"shit\">\n" +
+                "<shits>tae1</shits>"+
+                "<shits>tae2</shits>"+
+"      </shit>\n" +
 "      <publish_date>2001-03-10</publish_date>\n" +
 "      <description>In post-apocalypse England, the mysterious \n" +
 "      agent known only as Oberon helps to create a new life \n" +
@@ -164,26 +169,31 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "      environment.</description>\n" +
 "   </book>\n" +
 "</catalog>";
-        String xmlString2 = "<xs:element name=\"employee\" type=\"fullpersoninfo\"/>\n" +
-"\n" +
-"<xs:complexType name=\"personinfo\">\n" +
-"  <xs:sequence>\n" +
-"    <xs:element name=\"firstname\" type=\"xs:string\"/>\n" +
-"    <xs:element name=\"lastname\" type=\"xs:string\"/>\n" +
-"  </xs:sequence>\n" +
-"</xs:complexType>\n" +
-"\n" +
-"<xs:complexType name=\"fullpersoninfo\">\n" +
-"  <xs:complexContent>\n" +
-"    <xs:extension base=\"personinfo\">\n" +
-"      <xs:sequence>\n" +
-"        <xs:element name=\"address\" type=\"xs:string\"/>\n" +
-"        <xs:element name=\"city\" type=\"xs:string\"/>\n" +
-"        <xs:element name=\"country\" type=\"xs:string\"/>\n" +
-"      </xs:sequence>\n" +
-"    </xs:extension>\n" +
-"  </xs:complexContent>\n" +
-"</xs:complexType>";
+        String xmlString2 = "<ns4:QueryProfileResultMsg xmlns:ns2=\"http://www.huawei.com/bme/cbsinterface/common\" xmlns:ns3=\"http://www.huawei.com/bme/cbsinterface/cbs/businessmgr\" xmlns:ns4=\"http://www.huawei.com/bme/cbsinterface/cbs/businessmgrmsg\">\n" +
+"<ResultHeader>\n" +
+"<ns2:CommandId>QueryProfile</ns2:CommandId>\n" +
+"<ns2:Version>1</ns2:Version>\n" +
+"<ns2:TransactionId>2015031915433429360133534013</ns2:TransactionId>\n" +
+"<ns2:SequenceId>1</ns2:SequenceId>\n" +
+"<ns2:ResultCode>405000000</ns2:ResultCode>\n" +
+"<ns2:ResultDesc>Operation successful.</ns2:ResultDesc>\n" +
+"</ResultHeader>\n" +
+"<QueryProfileResult>\n" +
+"<ns3:IVRLang>2</ns3:IVRLang>\n" +
+"<ns3:SMSLang>2</ns3:SMSLang>\n" +
+"<ns3:PayType>0</ns3:PayType>\n" +
+"<ns3:State>1</ns3:State>\n" +
+"<ns3:Brand>1059</ns3:Brand>\n" +
+"<ns3:MainProductID>30039</ns3:MainProductID>\n" +
+"<ns3:ValidityDate>20161231</ns3:ValidityDate>\n" +
+"<ns3:SuspendStop>20170219</ns3:SuspendStop>\n" +
+"<ns3:DisabelStop>20170301</ns3:DisabelStop>\n" +
+"<ns3:ActivationDate>20141116</ns3:ActivationDate>\n" +
+"<ns3:PPSBalance>587500</ns3:PPSBalance>\n" +
+"<ns3:POSBalance>0</ns3:POSBalance>\n" +
+"<ns3:managementstate>000000000000000</ns3:managementstate>\n" +
+"</QueryProfileResult>\n" +
+"</ns4:QueryProfileResultMsg>";
         String content = "";
         try {
             content = new String(Files.readAllBytes(Paths.get("/Users/Pro/Downloads/gist3080489-282155349da23b26c69ec64c559f90e1b60ee7f4/gistfile1.txt")));
@@ -192,16 +202,24 @@ public class MainController extends ControllerTemplate implements IMainControlle
             CoreTemplate.logDebug(e.getMessage());
         }
         XmlParser xmlp = XmlParser.getInstance().
-                setIncludeAttributes(false).
-                xmlToObject(content);
-        this.loggerDebug("XML parser Object " + xmlp.toObject());
+                setIncludeAttributes(true).
+                xmlToObject(xmlString2);
+//        this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
         }
+        
+        this.loggerDebug("RAW OBJECT " + xmlp.toObject());
+        
+        //for XML Composer
+        String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
+        
+        this.loggerDebug("COMPOSED XML " + composedXml);
+        
 //        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());
 //        String secondStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(9).toObject());
         
-        return xmlp.toObject().toString();
+        return JSONValue.toJSONString(xmlp.toObject());
     }
     
     @RequestMapping(value = "/newTest", method = RequestMethod.GET)

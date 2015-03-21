@@ -44,6 +44,7 @@ enum XmlParserSingleton{
         this.includeAttr = includeAttr;
     }
     /**
+     * Does error occurred during parsing?
      * 
      * @return return true when error occurred is encountered
      */
@@ -190,19 +191,16 @@ enum XmlParserSingleton{
  */
 public class XmlParser{
     private Object obj;
-    private static XmlParser self = null;
+    private static final XmlParser self = new XmlParser();
     private XmlParser(){//prevent public access
         //CONSTRUCTOR
     }
     /**
-     * Lazy Initialization of the Singleton
+     * Initialization of the Singleton
      * 
      * @return returns the Instance of the XmlParser
      */
     public static synchronized XmlParser getInstance(){
-        if(self == null){
-            self = new XmlParser();
-        }
         return self;
     }
     /**
@@ -214,7 +212,7 @@ public class XmlParser{
         return XmlParserSingleton.INSTANCE.errorOccurred();
     }
     /**
-     * Error Description
+     * What is the cause of error?
      * 
      * @return returns Error message if error occurred
      */
