@@ -23,8 +23,13 @@ import org.xml.sax.SAXException;
  */
 enum XmlParserSingleton{
     INSTANCE;
+    enum XmlParsingType{
+        FIRST,
+        SECOND
+    }
     private boolean includeAttr = false; 
     private boolean errorOccurred = false;
+    private XmlParsingType parsingType = XmlParsingType.FIRST;
     private String errorMsg = "";
     /**
      * 
@@ -36,6 +41,11 @@ enum XmlParserSingleton{
         this.errorMsg = "";
         this.errorOccurred = false;
         return this.xmlParse(this.cleanXmlString(xmlString));
+    }
+    
+    
+    public void setXmlParsingType(XmlParsingType parsingType){
+        this.parsingType = parsingType;
     }
     /**
      * Include attributes setter
@@ -143,8 +153,7 @@ enum XmlParserSingleton{
      */
     private Object xmlElementParser(Object obj){
         Object retObject;
-        Element xmlElement = (Element) obj; 
-        HashMap<String, Object> elMap = new HashMap<>();
+        Element xmlElement = (Element) obj;    
         if(xmlElement.hasChildNodes() && xmlElement.getFirstChild().getNodeType() == Node.TEXT_NODE){
             if(xmlElement.getFirstChild().getNodeValue()!=null){
                 retObject = xmlElement.getFirstChild().getNodeValue();  
@@ -152,6 +161,7 @@ enum XmlParserSingleton{
                 retObject = "";
             }
         }else{
+            HashMap<String, Object> elMap = new HashMap<>();
             NodeList nList = xmlElement.getChildNodes();//get child nodes
             //find same tag name to become array
             ArrayList<String> nodeStore = new ArrayList<>();
@@ -175,23 +185,28 @@ enum XmlParserSingleton{
                         return "<![CDATA[" + cDS.getWholeText() + "]]>";
                     }
                     else{
-                        CoreTemplate.logDebug("XML NODE NAME = " + nList.item(i).getNodeName());
+                        if(this.includeAttr && this.parsingType == XmlParsingType.SECOND){//set on the setter
+                            NamedNodeMap attrs = nList.item(i).getAttributes();  
+                            for(int attC = 0 ; attC<attrs.getLength() ; attC++) {
+                              Attr attribute = (Attr)attrs.item(attC);
+                              elMap.put("-" + attribute.getName(), attribute.getValue());
+                            }
+                        }
                         elMap.put(nList.item(i).getNodeName(), this.xmlElementParser(nList.item(i)));
                     }
                     
                 }
             } 
-
-        }
-        //this will add attributes
-        if(this.includeAttr){//set on the setter
-            NamedNodeMap attrs = xmlElement.getAttributes();  
-            for(int i = 0 ; i<attrs.getLength() ; i++) {
-              Attr attribute = (Attr)attrs.item(i);
-              elMap.put("-" + attribute.getName(), attribute.getValue());
+            //this will add attributes
+            if(this.includeAttr && this.parsingType == XmlParsingType.FIRST){//set on the setter
+                NamedNodeMap attrs = xmlElement.getAttributes();  
+                for(int i = 0 ; i<attrs.getLength() ; i++) {
+                  Attr attribute = (Attr)attrs.item(i);
+                  elMap.put("-" + attribute.getName(), attribute.getValue());
+                }
             }
+            retObject = elMap;
         }
-        retObject = elMap;
         return retObject;
     }
 }
@@ -201,6 +216,10 @@ enum XmlParserSingleton{
  * @author JRANGEL
  */
 public class XmlParser{
+    public enum XmlParsingType{
+        FIRST,
+        SECOND
+    }
     private Object obj;
     private static final XmlParser self = new XmlParser();
     private XmlParser(){//prevent public access
@@ -213,6 +232,16 @@ public class XmlParser{
      */
     public static synchronized XmlParser getInstance(){
         return self;
+    }
+    
+    public XmlParser setXmlParsingType(XmlParsingType parsingType){
+        if (parsingType == XmlParsingType.FIRST) {
+            XmlParserSingleton.INSTANCE.setXmlParsingType(XmlParserSingleton.XmlParsingType.FIRST);
+        }
+        else{
+            XmlParserSingleton.INSTANCE.setXmlParsingType(XmlParserSingleton.XmlParsingType.SECOND);
+        }
+        return this;
     }
     /**
      * Does Error occurred during parsing?

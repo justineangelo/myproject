@@ -82,7 +82,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "      <genre>Fantasy</genre>\n" +
 "      <price>5.95</price>\n" +
 "      <shit id=\"shit\">\n" +
-                "<shits>tae1</shits>"+
+                "<shits id=\"fuck\">tae1</shits>"+
                 "<shits>tae2</shits>"+
 "      </shit>\n" +
 "      <publish_date>2001-03-10</publish_date>\n" +
@@ -213,6 +213,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
         
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
+                setXmlParsingType(XmlParser.XmlParsingType.FIRST).
                 xmlToObject(xmlString);
         this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
