@@ -1,4 +1,5 @@
 package com.tspi.helpers;
+import com.tspi.template.CoreTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.w3c.dom.CDATASection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -141,7 +143,8 @@ enum XmlParserSingleton{
      */
     private Object xmlElementParser(Object obj){
         Object retObject;
-        Element xmlElement = (Element) obj;    
+        Element xmlElement = (Element) obj; 
+        HashMap<String, Object> elMap = new HashMap<>();
         if(xmlElement.hasChildNodes() && xmlElement.getFirstChild().getNodeType() == Node.TEXT_NODE){
             if(xmlElement.getFirstChild().getNodeValue()!=null){
                 retObject = xmlElement.getFirstChild().getNodeValue();  
@@ -149,7 +152,6 @@ enum XmlParserSingleton{
                 retObject = "";
             }
         }else{
-            HashMap<String, Object> elMap = new HashMap<>();
             NodeList nList = xmlElement.getChildNodes();//get child nodes
             //find same tag name to become array
             ArrayList<String> nodeStore = new ArrayList<>();
@@ -168,19 +170,28 @@ enum XmlParserSingleton{
                     elMap.put(nList.item(i).getNodeName(), arrContent);
                 }
                 else{//fro mapping
-                    elMap.put(nList.item(i).getNodeName(), this.xmlElementParser(nList.item(i)));
+                    if(nList.item(i) instanceof CDATASection){
+                        CDATASection cDS = (CDATASection)nList.item(i);
+                        return "<![CDATA[" + cDS.getWholeText() + "]]>";
+                    }
+                    else{
+                        CoreTemplate.logDebug("XML NODE NAME = " + nList.item(i).getNodeName());
+                        elMap.put(nList.item(i).getNodeName(), this.xmlElementParser(nList.item(i)));
+                    }
+                    
                 }
             } 
-            //this will add attributes
-            if(this.includeAttr){//set on the setter
-                NamedNodeMap attrs = xmlElement.getAttributes();  
-                for(int i = 0 ; i<attrs.getLength() ; i++) {
-                  Attr attribute = (Attr)attrs.item(i);
-                  elMap.put("-" + attribute.getName(), attribute.getValue());
-                }
-            }
-            retObject = elMap;
+
         }
+        //this will add attributes
+        if(this.includeAttr){//set on the setter
+            NamedNodeMap attrs = xmlElement.getAttributes();  
+            for(int i = 0 ; i<attrs.getLength() ; i++) {
+              Attr attribute = (Attr)attrs.item(i);
+              elMap.put("-" + attribute.getName(), attribute.getValue());
+            }
+        }
+        retObject = elMap;
         return retObject;
     }
 }

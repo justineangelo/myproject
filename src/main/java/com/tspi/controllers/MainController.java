@@ -49,7 +49,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
         this.sm = new StoreModel();
     }
     
-    @RequestMapping(value = "/startTest", method = RequestMethod.GET)
+    @RequestMapping(value = "/startTest", method = RequestMethod.GET, produces = "text/xml")
     public String startTest(){
         String test = "testing";
         //should start
@@ -202,14 +202,23 @@ public class MainController extends ControllerTemplate implements IMainControlle
         } catch (Exception e) {
             CoreTemplate.logDebug(e.getMessage());
         }
+        RequestHelper rh = new RequestHelper();
+        rh.setStringURI("https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22nome%2C%20ak%22)&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys");
+        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
+        rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
+        rh.requestStart();
+        String resp = rh.getRawResponseString();
+        
+        this.loggerDebug("YAHOO WEATHER " + resp);
+        
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
-                xmlToObject(xmlString2);
-//        this.loggerDebug("XML parser Object " + xmlp.toObject());
+                xmlToObject(xmlString);
+        this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
         }
-        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
+//        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
         this.loggerDebug("RAW OBJECT " + xmlp.toObject());
         
         //for XML Composer
@@ -220,8 +229,9 @@ public class MainController extends ControllerTemplate implements IMainControlle
         
 //        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());
 //        String secondStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(9).toObject());
-        
-        return JSONValue.toJSONString(xmlp.toObject());
+        return composedXml;
+//        return JSONValue.toJSONString(xmlp.toObject());
+//        return "test";
     }
     
     @RequestMapping(value = "/newTest", method = RequestMethod.GET)

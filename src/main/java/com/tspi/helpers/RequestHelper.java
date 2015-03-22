@@ -26,7 +26,7 @@ public class RequestHelper extends CoreTemplate{
         POST, GET
     }
     public enum RequestProperty{
-        REST, SOAP
+        REST, SOAP, ALL
     }
     private boolean errorOccured = false;
     private String errorDescription = "";
