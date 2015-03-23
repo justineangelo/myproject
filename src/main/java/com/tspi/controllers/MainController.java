@@ -29,6 +29,7 @@ import com.tspi.helpers.XmlComposer;
 import com.tspi.template.CoreTemplate;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import com.tspi.helpers.JsonUtility;
 
 /**
  *
@@ -49,7 +50,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
         this.sm = new StoreModel();
     }
     
-    @RequestMapping(value = "/startTest", method = RequestMethod.GET, produces = "text/xml")
+    @RequestMapping(value = "/startTest", method = RequestMethod.GET, produces = "text/json")
     public String startTest(){
         String test = "testing";
         //should start
@@ -222,7 +223,7 @@ public class MainController extends ControllerTemplate implements IMainControlle
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
                 setXmlParsingType(XmlParser.XmlParsingType.FIRST).
-                xmlToObject(xmlString);
+                xmlToObject(resp);
 //        this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
@@ -231,14 +232,19 @@ public class MainController extends ControllerTemplate implements IMainControlle
 //        this.loggerDebug("RAW OBJECT " + xmlp.toObject());
         
         //for XML Composer
-
-        String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
-        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
+        String jsonString = JsonUtility.getInstance().toJsonString(xmlp.toObject());
+        JsonUtility ju = JsonUtility.getInstance().toJsonObject(jsonString);
+//        String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
+//        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
 //        this.loggerDebug("COMPOSED XML " + composedXml);
-        
+        jsonString = JsonUtility.getInstance().toJsonString(ju.getJsonObjectForKey("prepaid").getJsonObjectForIndex(1).toObject());
+        if(JsonUtility.getInstance().errorOccurred()){
+            this.loggerDebug("ERROR in JSON " + JsonUtility.getInstance().getErrorDescription());
+        }
+        return jsonString;
 //        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());
 //        String secondStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(9).toObject());
-        return composedXml;
+//        return composedXml;
 //        return JSONValue.toJSONString(xmlp.toObject());
 //        return "test";
     }
