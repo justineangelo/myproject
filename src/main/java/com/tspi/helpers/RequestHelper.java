@@ -214,8 +214,7 @@ public class RequestHelper{
                             this.responseString = outString;
                             inputStream.close();
                         }
-                    }
-                    else{
+                    }else{
                         this.errorOccurred = true;
                         this.errorDescription = "Response Code " + status + " Response Description : " + connection.getResponseMessage();
                     }
