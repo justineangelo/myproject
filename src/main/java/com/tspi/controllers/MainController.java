@@ -202,14 +202,22 @@ public class MainController extends ControllerTemplate implements IMainControlle
 //        } catch (Exception e) {
 //            CoreTemplate.logDebug(e.getMessage());
 //        }
-//        RequestHelper rh = new RequestHelper();
-//        rh.setStringURI("http://cbssdev/TGSI/JRANGEL.TEST/testPage.php");
-//        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
-//        rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
-//        rh.requestStart();
-//        String resp = rh.getRawResponseString();
-//        
-//        this.loggerDebug("CBSSDEV " + resp);
+
+        HashMap<String, String> requestData = new HashMap<>();
+        requestData.put("username", "spinoysys");
+        requestData.put("password", "spinoy2012");
+        requestData.put("mobile_no", "0133534013");
+        requestData.put("trx_id", "123123123123123");
+        requestData.put("medium", "SMS");
+        String resp = RequestHelper.getInstance().setStringURI("http://cbssdev/TGSI/JRANGEL.TEST/testPage.php?fuck=1")
+                .setRequestMethod(RequestHelper.RequestMethod.POST)
+                .setRequestData(requestData)
+                .startRequest().getResponseString();
+        if(RequestHelper.getInstance().errorOccurred()){
+            this.loggerDebug("ERROR in REQUEST HELPER " + RequestHelper.getInstance().getErrorDescription());
+        }
+        this.loggerDebug("HEADER RESP CODE " + RequestHelper.getInstance().getHeaderResponseCode());
+        this.loggerDebug("CBSSDEV " + resp);
         
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
