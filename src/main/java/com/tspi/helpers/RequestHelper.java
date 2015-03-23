@@ -14,85 +14,108 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.json.simple.JSONValue;
+
+enum RequestHelperSingleton{
+    INSTANCE;
+    
+    
+}
 
 /**
  *
  * @author JRANGEL
  */
 public class RequestHelper extends CoreTemplate{
-    
     public enum RequestMethod{
         POST, GET
     }
-    public enum RequestProperty{
-        REST, SOAP, ALL
+    private static final RequestHelper self = new RequestHelper();
+   
+    private String strURI;
+    private RequestMethod rt;//default request method
+    private int requestTimeout;//default request timeout in miliseconds
+    private int readTimeout;//default read timeout in mili seconds
+    private HashMap<String, String> postData;
+    
+    private boolean errorOccured;
+    private String errorDescription;
+    private String responceString;
+    
+    private RequestHelper(){
+        //Private Constructor
+        this.setDefault();
     }
-    private boolean errorOccured = false;
-    private String errorDescription = "";
-    private String rawRespString = "";
+    
+
+
+    /**
+     * 
+     * @return returns the static instance of the RequestHelper 
+     */
+    public static synchronized RequestHelper getInstance(){
+        return self;
+    }
+    /**
+     * Set Default values 
+     */
+    private void setDefault(){
+        
+        this.errorOccured = false;
+        this.errorDescription = "";
+        this.responceString = "";
+        
+        this.strURI = "";
+        this.rt = RequestMethod.GET;
+        this.requestTimeout = 10000;// 10seconds request default
+        this.readTimeout = 10000;//10 seconds read default
+        this.postData = null;
+    }
     
     
-    private String strURI = "";
-    private RequestMethod rt = RequestMethod.GET;//default request method
-    private RequestProperty rp = RequestProperty.REST;//default request property
-    private int requestTimeout = 10000;//default request timeout in miliseconds
-    private int readTimeout = 5000;//default read timeout in mili seconds
-    private HashMap<String, String> postData = null;
-    /*
-    Start Setter
-    */
-    public void setStringURI(String uri){
+    public RequestHelper setStringURI(String uri){
         this.strURI = uri;
+        return this;
     }
     public void setRequestMethod(RequestMethod rt){
         this.rt = rt;
     }
-    public void setRequestProperty(RequestProperty rp){
-        this.rp = rp;
-    }
-    public void setRequestConnnectionTimeout(int timeout){
+    public RequestHelper setRequestConnnectionTimeout(int timeout){
         this.requestTimeout = timeout;
+        return this;
     }
-    public void setRequestReadTimeout(int timeout){
+    public RequestHelper setRequestReadTimeout(int timeout){
         this.readTimeout = timeout;
+        return this;
     }
-    public void setPostData(HashMap<String, String> postData){
+    public RequestHelper setPostData(HashMap<String, String> postData){
         this.postData = postData;
+        return this;
     }
-    /*
-    End Setter
-    */
-    /*
-    Start Getter
-    */
+ 
+    
     public String getErrorDesciption(){
         return this.errorDescription;
     }
     public boolean errorOccured(){
         return this.errorOccured;
     }
-    public String getRawResponseString(){
-        return this.rawRespString;
+    public String responseString(){
+        return this.responceString;
     }
-    /*
-    End Getter
-    */
+ 
     
-    /*
-    Start Execution
-    */
-    public Object requestStart(){
-        
+    public RequestHelper startRequest(){
         this.errorOccured = false;
         this.errorDescription = "";
-        this.rawRespString = "";
-        Object returnObject = null;
+        this.responceString = "";
         HttpURLConnection connection = null;
-        
         try {
             URL url = new URL(this.strURI);
             connection =  (HttpURLConnection)url.openConnection();
+            connection.setRequestProperty("Accept", "*/*");
+            connection.setConnectTimeout(this.requestTimeout);
+            connection.setReadTimeout(this.readTimeout);
+            connection.setAllowUserInteraction(false);
             if(this.rt == RequestMethod.GET){
                 connection.setRequestMethod("GET");
             }else if(this.rt == RequestMethod.POST){
@@ -120,22 +143,11 @@ public class RequestHelper extends CoreTemplate{
                     }
                 }
             }
-            if(this.rp == RequestProperty.REST){
-                connection.setRequestProperty("Accept", "application/json");
-            }else if(this.rp == RequestProperty.SOAP){
-                connection.setRequestProperty("Accept", "appliction/xml");
-            }
-            
-            connection.setConnectTimeout(this.requestTimeout);
-            connection.setReadTimeout(this.readTimeout);
-            connection.setAllowUserInteraction(false);
             connection.connect();
-            
         } catch (Exception e) {
             this.errorOccured = true;
             this.errorDescription = e.getMessage();
         }finally{
-            this.rawRespString = "has connection";
             try {
                 if(connection!=null){
                     int status = connection.getResponseCode();
@@ -144,18 +156,10 @@ public class RequestHelper extends CoreTemplate{
                         try ( //success
                             InputStream inputStream = connection.getInputStream()) {
                             outString = this.streamReader(inputStream);
-                            this.rawRespString = outString;
+                            this.responceString = outString;
                             inputStream.close();
                             // Do something on outString
                         }
-                        if(this.rp == RequestProperty.REST){
-                            returnObject = JSONValue.parse(outString);
-                        }else if (this.rp == RequestProperty.SOAP) {
-                            returnObject = XmlParser.getInstance().xmlToObject(outString).toObject();
-                        }else{
-                            returnObject = outString;
-                        }
-
                     }
                     else{
                         //fail
@@ -167,14 +171,18 @@ public class RequestHelper extends CoreTemplate{
                 this.errorDescription = e.getMessage();
             }finally{
                 /*parsing start*/
-
+                this.setDefault();//set default
             }
-                
-            
         }
-        return returnObject;
+        return this;
     }
-    
+    /**
+     * read input stream and convert it to string
+     * 
+     * @param stream
+     * @return
+     * @throws Exception 
+     */
     private String streamReader(InputStream stream) throws Exception{
         BufferedReader br = null;
         StringBuilder sb = null;
@@ -198,7 +206,4 @@ public class RequestHelper extends CoreTemplate{
         }
        return retString;
     }
-    /*
-    End Execution
-    */
 }

@@ -196,37 +196,37 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "</ns4:QueryProfileResultMsg>";
         String content = "";
 
-        try {
-            content = new String(Files.readAllBytes(Paths.get("/Users/Pro/Downloads/gist3080489-282155349da23b26c69ec64c559f90e1b60ee7f4/gistfile1.txt")));
-
-        } catch (Exception e) {
-            CoreTemplate.logDebug(e.getMessage());
-        }
-        RequestHelper rh = new RequestHelper();
-        rh.setStringURI("https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22nome%2C%20ak%22)&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys");
-        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
-        rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
-        rh.requestStart();
-        String resp = rh.getRawResponseString();
-        
-        this.loggerDebug("YAHOO WEATHER " + resp);
+//        try {
+//            content = new String(Files.readAllBytes(Paths.get("/Users/Pro/Downloads/gist3080489-282155349da23b26c69ec64c559f90e1b60ee7f4/gistfile1.txt")));
+//
+//        } catch (Exception e) {
+//            CoreTemplate.logDebug(e.getMessage());
+//        }
+//        RequestHelper rh = new RequestHelper();
+//        rh.setStringURI("http://cbssdev/TGSI/JRANGEL.TEST/testPage.php");
+//        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
+//        rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
+//        rh.requestStart();
+//        String resp = rh.getRawResponseString();
+//        
+//        this.loggerDebug("CBSSDEV " + resp);
         
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
                 setXmlParsingType(XmlParser.XmlParsingType.FIRST).
                 xmlToObject(xmlString);
-        this.loggerDebug("XML parser Object " + xmlp.toObject());
+//        this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
         }
 //        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
-        this.loggerDebug("RAW OBJECT " + xmlp.toObject());
+//        this.loggerDebug("RAW OBJECT " + xmlp.toObject());
         
         //for XML Composer
 
         String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
         this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
-        this.loggerDebug("COMPOSED XML " + composedXml);
+//        this.loggerDebug("COMPOSED XML " + composedXml);
         
 //        String firstStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(10).toObject());
 //        String secondStr = JSONValue.toJSONString(xmlp.copyObjectForKey("catalog").getObjectForKey("book").getObjectAtIndex(9).toObject());
@@ -265,34 +265,34 @@ public class MainController extends ControllerTemplate implements IMainControlle
             this.setIsRunning("parsedPage", true);
             logger.info("showParsedPage");
             String s;
-            RequestHelper rh = new RequestHelper();
-    //        rh.setStringURI("http://localhost:8080/myproject/service/eStore/api?username=username1&itemname=bag");
-            rh.setStringURI("http://cbssdev/TGSI/JRANGEL.TEST/testPage.php");
-    //        rh.setRequestProperty(RequestHelper.RequestProperty.REST);
-            rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
-            rh.setRequestMethod(RequestHelper.RequestMethod.POST);
-    //        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
-            HashMap<String, String> postData = new HashMap<>();
-            postData.put("username", "spinoysys");
-                postData.put("password", "spinoy2012");
-                postData.put("mobile_no", "0133534013");
-                postData.put("trx_id", "123123123123123");
-                postData.put("medium", "SMS");
-            rh.setPostData(postData);
-            rh.setRequestMethod(RequestHelper.RequestMethod.POST);
-            Object obj = rh.requestStart();
-            if(obj==null){
-                this.loggerDebug("null object");
-            }
-            else{
-                this.loggerDebug(obj.toString());
-            this.loggerDebug(rh.getRawResponseString());
-            } 
-            try {
-                Thread.sleep(5000);
-            } catch (Exception e) {
-            }
-            this.setIsRunning("parsedPage", false);
+//            RequestHelper rh = new RequestHelper();
+//    //        rh.setStringURI("http://localhost:8080/myproject/service/eStore/api?username=username1&itemname=bag");
+//            rh.setStringURI("http://cbssdev/TGSI/JRANGEL.TEST/testPage.php");
+//    //        rh.setRequestProperty(RequestHelper.RequestProperty.REST);
+//            rh.setRequestProperty(RequestHelper.RequestProperty.SOAP);
+//            rh.setRequestMethod(RequestHelper.RequestMethod.POST);
+//    //        rh.setRequestMethod(RequestHelper.RequestMethod.GET);
+//            HashMap<String, String> postData = new HashMap<>();
+//            postData.put("username", "spinoysys");
+//                postData.put("password", "spinoy2012");
+//                postData.put("mobile_no", "0133534013");
+//                postData.put("trx_id", "123123123123123");
+//                postData.put("medium", "SMS");
+//            rh.setPostData(postData);
+//            rh.setRequestMethod(RequestHelper.RequestMethod.POST);
+//            Object obj = rh.requestStart();
+//            if(obj==null){
+//                this.loggerDebug("null object");
+//            }
+//            else{
+//                this.loggerDebug(obj.toString());
+//            this.loggerDebug(rh.getRawResponseString());
+//            } 
+//            try {
+//                Thread.sleep(5000);
+//            } catch (Exception e) {
+//            }
+//            this.setIsRunning("parsedPage", false);
             mv.addObject("data","Executed");
         }else{
             mv.addObject("data","Running");
