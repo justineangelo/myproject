@@ -1,5 +1,6 @@
 package com.tspi.helpers;
 
+import com.tspi.template.CoreTemplate;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStream;
@@ -47,11 +48,10 @@ public class RequestHelper{
     private void setDefault(){ 
         this.strURI = "";
         this.rt = RequestMethod.GET;
-        this.requestTimeout = 10000;// 10seconds request default
-        this.readTimeout = 10000;//10 seconds read default
+        this.requestTimeout = 5000;// 10seconds request default
+        this.readTimeout = 5000;//10 seconds read default
         this.requestData = null;
     }
-    
     /**
      * 
      * @param uri
@@ -100,9 +100,9 @@ public class RequestHelper{
         return this;
     }
     /**
-     * Get the error Desciption
+     * Get the error description
      * 
-     * @return returns error Description
+     * @return returns error description
      */
     public String getErrorDescription(){
         return this.errorDescription;
@@ -132,12 +132,20 @@ public class RequestHelper{
     public int getHeaderResponseCode(){
         return this.headerResponseCode;
     }
- 
+    /**
+     * Returns the header response description
+     * 
+     * @return returns the header response description
+     */
+    public String getHeaderResponseDescription(){
+        return this.headerResponseDesc;
+    }
     /**
      * Starts the request/Execute the connection
      * 
      * @return instance of the Request Helper
      */
+    
     public RequestHelper startRequest(){
         this.errorOccurred = false;
         this.errorDescription = "";
@@ -146,23 +154,24 @@ public class RequestHelper{
         this.headerResponseDesc = "";
         HttpURLConnection connection = null;
         try {
-            if(this.rt == RequestMethod.GET && this.requestData != null){
+            StringBuilder sBRD = new StringBuilder();
+            boolean isFirstAppend = true;
+            if(this.requestData != null){
+                for (HashMap.Entry entry : this.requestData.entrySet()) {
+                    if(!isFirstAppend){
+                        sBRD.append("&");
+                    }
+                    sBRD.append(entry.getKey());
+                    sBRD.append("=");
+                    sBRD.append(entry.getValue());
+                    isFirstAppend = false;
+                }
+            }
+            if(this.rt == RequestHelper.RequestMethod.GET && this.requestData != null){
                 if(this.strURI.contains("?")){
                     this.strURI = this.strURI.split("\\?")[0];
                 }
-                boolean isFirstAppend = true;
-                StringBuilder urlSB = new StringBuilder(this.strURI);
-                urlSB.append("?");
-                for (HashMap.Entry entry : this.requestData.entrySet()) {
-                    if(!isFirstAppend){
-                        urlSB.append("&");
-                    }
-                    urlSB.append(entry.getKey());
-                    urlSB.append("=");
-                    urlSB.append(entry.getValue());
-                    isFirstAppend = false;
-                }
-                this.strURI = urlSB.toString();
+                this.strURI += "?" + sBRD.toString();
             }
             URL url = new URL(this.strURI);
             connection =  (HttpURLConnection)url.openConnection();
@@ -175,20 +184,9 @@ public class RequestHelper{
             }else if(this.rt == RequestMethod.POST){
                 connection.setRequestMethod("POST");
                 if(this.requestData != null){
-                    boolean isFirstAppend = true;
-                    StringBuilder sb = new StringBuilder();
-                    for (HashMap.Entry entry : this.requestData.entrySet()) {
-                        if(!isFirstAppend){
-                            sb.append("&");
-                        }
-                        sb.append(entry.getKey());
-                        sb.append("=");
-                        sb.append(entry.getValue());
-                        isFirstAppend = false;
-                    }
                     connection.setDoOutput(true);
                     try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-                        wr.writeBytes(sb.toString());
+                        wr.writeBytes(sBRD.toString());
                         wr.flush();
                         wr.close();
                     }catch(Exception e){
