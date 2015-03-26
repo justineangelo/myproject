@@ -1,7 +1,6 @@
 package com.tspi.helpers;
 
 import com.tspi.template.CoreTemplate;
-import com.tspi.helpers.ThreadContent;
 import java.util.ArrayList;
 
 /**
