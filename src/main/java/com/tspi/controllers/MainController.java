@@ -16,20 +16,19 @@ import com.tspi.models.TestModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.tspi.helpers.Store;
+
 import org.springframework.web.servlet.ModelAndView;
-import com.tspi.helpers.RequestHelper;
+
 import com.tspi.template.ControllerTemplate;
 
 import org.json.simple.JSONValue;
 import org.apache.log4j.Logger;
 
-import com.tspi.helpers.XmlParser;
-import com.tspi.helpers.XmlComposer;
 import com.tspi.template.CoreTemplate;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.tspi.helpers.JsonUtility;
+
+import com.tspi.helpers.*;
 
 /**
  *
@@ -195,6 +194,88 @@ public class MainController extends ControllerTemplate implements IMainControlle
 "<ns3:managementstate>000000000000000</ns3:managementstate>\n" +
 "</QueryProfileResult>\n" +
 "</ns4:QueryProfileResultMsg>";
+        String yahooWeather = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<query xmlns:yahoo=\"http://www.yahooapis.com/v1/base.rng\"\n" +
+"    yahoo:count=\"1\" yahoo:created=\"2015-03-25T23:40:14Z\" yahoo:lang=\"fil\">\n" +
+"    <results>\n" +
+"        <channel>\n" +
+"            <title>Yahoo! Weather - Nome, AK</title>\n" +
+"            <link>http://us.rd.yahoo.com/dailynews/rss/weather/Nome__AK/*http://weather.yahoo.com/forecast/USAK0170_f.html</link>\n" +
+"            <description>Yahoo! Weather for Nome, AK</description>\n" +
+"            <language>en-us</language>\n" +
+"            <lastBuildDate>Wed, 25 Mar 2015 2:52 pm AKDT</lastBuildDate>\n" +
+"            <ttl>60</ttl>\n" +
+"            <yweather:location\n" +
+"                xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                city=\"Nome\" country=\"United States\" region=\"AK\"/>\n" +
+"            <yweather:units\n" +
+"                xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                distance=\"mi\" pressure=\"in\" speed=\"mph\" temperature=\"F\"/>\n" +
+"            <yweather:wind\n" +
+"                xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                chill=\"13\" direction=\"250\" speed=\"5\"/>\n" +
+"            <yweather:atmosphere\n" +
+"                xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                humidity=\"77\" pressure=\"29.64\" rising=\"2\" visibility=\"10\"/>\n" +
+"            <yweather:astronomy\n" +
+"                xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                sunrise=\"8:43 am\" sunset=\"9:31 pm\"/>\n" +
+"            <image>\n" +
+"                <title>Yahoo! Weather</title>\n" +
+"                <width>142</width>\n" +
+"                <height>18</height>\n" +
+"                <link>http://weather.yahoo.com</link>\n" +
+"                <url>http://l.yimg.com/a/i/brand/purplelogo//uh/us/news-wea.gif</url>\n" +
+"            </image>\n" +
+"            <item>\n" +
+"                <title>Conditions for Nome, AK at 2:52 pm AKDT</title>\n" +
+"                <geo:lat xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\">64.5</geo:lat>\n" +
+"                <geo:long xmlns:geo=\"http://www.w3.org/2003/01/geo/wgs84_pos#\">-165.41</geo:long>\n" +
+"                <link>http://us.rd.yahoo.com/dailynews/rss/weather/Nome__AK/*http://weather.yahoo.com/forecast/USAK0170_f.html</link>\n" +
+"                <pubDate>Wed, 25 Mar 2015 2:52 pm AKDT</pubDate>\n" +
+"                <yweather:condition\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"28\" date=\"Wed, 25 Mar 2015 2:52 pm AKDT\"\n" +
+"                    temp=\"20\" text=\"Mostly Cloudy\"/>\n" +
+"                <description><![CDATA[\n" +
+"<img src=\"http://l.yimg.com/a/i/us/we/52/28.gif\"/><br />\n" +
+"<b>Current Conditions:</b><br />\n" +
+"Mostly Cloudy, 20 F<BR />\n" +
+"<BR /><b>Forecast:</b><BR />\n" +
+"Wed - Clear. High: 20 Low: 6<br />\n" +
+"Thu - Sunny. High: 21 Low: 4<br />\n" +
+"Fri - Sunny. High: 24 Low: 10<br />\n" +
+"Sat - Mostly Cloudy. High: 27 Low: 18<br />\n" +
+"Sun - Partly Cloudy. High: 25 Low: 10<br />\n" +
+"<br />\n" +
+"<a href=\"http://us.rd.yahoo.com/dailynews/rss/weather/Nome__AK/*http://weather.yahoo.com/forecast/USAK0170_f.html\">Full Forecast at Yahoo! Weather</a><BR/><BR/>\n" +
+"(provided by <a href=\"http://www.weather.com\" >The Weather Channel</a>)<br/>\n" +
+"]]></description>\n" +
+"                <yweather:forecast\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"31\" date=\"25 Mar 2015\" day=\"Wed\" high=\"20\"\n" +
+"                    low=\"6\" text=\"Clear\"/>\n" +
+"                <yweather:forecast\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"32\" date=\"26 Mar 2015\" day=\"Thu\" high=\"21\"\n" +
+"                    low=\"4\" text=\"Sunny\"/>\n" +
+"                <yweather:forecast\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"32\" date=\"27 Mar 2015\" day=\"Fri\" high=\"24\"\n" +
+"                    low=\"10\" text=\"Sunny\"/>\n" +
+"                <yweather:forecast\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"28\" date=\"28 Mar 2015\" day=\"Sat\" high=\"27\"\n" +
+"                    low=\"18\" text=\"Mostly Cloudy\"/>\n" +
+"                <yweather:forecast\n" +
+"                    xmlns:yweather=\"http://xml.weather.yahoo.com/ns/rss/1.0\"\n" +
+"                    code=\"30\" date=\"29 Mar 2015\" day=\"Sun\" high=\"25\"\n" +
+"                    low=\"10\" text=\"Partly Cloudy\"/>\n" +
+"                <guid isPermaLink=\"false\">USAK0170_2015_03_29_7_00_AKDT</guid>\n" +
+"            </item>\n" +
+"        </channel>\n" +
+"    </results>\n" +
+"</query>";
         String content = "";
 
 //        try {
@@ -222,22 +303,23 @@ public class MainController extends ControllerTemplate implements IMainControlle
         
         XmlParser xmlp = XmlParser.getInstance().
                 setIncludeAttributes(true).
+                convertCDATAToText(false).
                 setXmlParsingType(XmlParser.XmlParsingType.FIRST).
-                xmlToObject(resp);
+                xmlToObject(yahooWeather);
 //        this.loggerDebug("XML parser Object " + xmlp.toObject());
         if(xmlp.errrorOccurred()){
             return xmlp.errorMsg();
         }
 //        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
 //        this.loggerDebug("RAW OBJECT " + xmlp.toObject());
-        
+
         //for XML Composer
         String jsonString = JsonUtility.getInstance().toJsonString(xmlp.toObject());
-        JsonUtility ju = JsonUtility.getInstance().toJsonObject(jsonString);
-//        String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
-//        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
-//        this.loggerDebug("COMPOSED XML " + composedXml);
-        jsonString = JsonUtility.getInstance().toJsonString(ju.getJsonObjectForKey("prepaid").getJsonObjectForIndex(1).toObject());
+//        JsonUtility ju = JsonUtility.getInstance().toJsonObject(jsonString);
+        String composedXml = XmlComposer.getInstance().objectToXml(xmlp.toObject());
+        this.loggerDebug("MEMORY USED KB " + XmlComposer.getInstance().getTotalMemory());
+        this.loggerDebug("COMPOSED XML " + composedXml);
+//        jsonString = JsonUtility.getInstance().toJsonString(ju.getJsonObjectForKey("prepaid").getJsonObjectForIndex(1).toObject());
         if(JsonUtility.getInstance().errorOccurred()){
             this.loggerDebug("ERROR in JSON " + JsonUtility.getInstance().getErrorDescription());
         }

@@ -1,5 +1,5 @@
 package com.tspi.helpers;
-import com.tspi.template.CoreTemplate;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +27,8 @@ enum XmlParserSingleton{
         FIRST,
         SECOND
     }
-    private boolean includeAttr = false; 
+    private boolean includeAttr = true; 
+    private boolean convertCData = true;
     private boolean errorOccurred = false;
     private XmlParsingType parsingType = XmlParsingType.FIRST;
     private String errorMsg = "";
@@ -43,6 +44,15 @@ enum XmlParserSingleton{
         return this.xmlParse(this.cleanXmlString(xmlString));
     }
     
+    /**
+     * Should CDATA be converted to text object
+     * true will convert CDATA to text else retain
+     * 
+     * @param convertCData 
+     */
+    public void setConvertCDataToText(boolean convertCData){
+        this.convertCData = convertCData;
+    }
     
     public void setXmlParsingType(XmlParsingType parsingType){
         this.parsingType = parsingType;
@@ -80,10 +90,8 @@ enum XmlParserSingleton{
     private String cleanXmlString(String xmlString){
         //remove uncessary characters
         String cleanedXmlString = xmlString
-                .replaceAll("\n", " ")
-                .replaceAll("\r", " ")
-                .replaceAll("\t", " ")
-                .replaceAll("\\<\\?xml(.+?)\\?\\>", "")//replace the XML tag maybe not necessary though
+                .replaceAll("\n|\r|\t|( +)", " ")
+//                .replaceAll("\\<\\?xml(.+?)\\?\\>", "")//replace the XML tag maybe not necessary though
                 .replaceAll("\\>( +?)\\<", "><")//replace spaces
                 .trim();
         //uncomment to use remove attributes
@@ -109,9 +117,9 @@ enum XmlParserSingleton{
                 cInV = i + 1;
                 String toCleanStr = xmlString.substring(cInK, i+1);
                 toCleanStr = toCleanStr
-                        .replaceAll(" (.+?)\\>", ">")//replace " asfafaf> = >"
-                        .replaceAll("\\<\\/(.+?):", "</")//replace "</fsafsa: = </"
-                        .replaceAll("\\<(.+?):", "<")//replace "<fsafsa: = <"
+                        .replaceAll(" (.+?)\\>", ">")//replace " foo> = >"
+                        .replaceAll("\\<\\/(.+?):", "</")//replace "</foo: = </"
+                        .replaceAll("\\<(.+?):", "<")//replace "<foo: = <"
                         ;
                 sb.append(toCleanStr);
             }
@@ -182,6 +190,9 @@ enum XmlParserSingleton{
                 else{//fro mapping
                     if(nList.item(i) instanceof CDATASection){
                         CDATASection cDS = (CDATASection)nList.item(i);
+                        if(this.convertCData){
+                            return cDS.getWholeText().trim();
+                        }
                         return "<![CDATA[" + cDS.getWholeText() + "]]>";
                     }
                     else{
@@ -221,6 +232,7 @@ public class XmlParser{
         SECOND
     }
     private Object obj;
+    private Long memoryCosumption = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L;
     private static final XmlParser self = new XmlParser();
     private XmlParser(){//prevent public access
         //CONSTRUCTOR
@@ -233,7 +245,24 @@ public class XmlParser{
     public static synchronized XmlParser getInstance(){
         return self;
     }
+    /**
+     * Parameter to convert CDATA to Text
+     * 
+     * @param convertCData
+     * @return  returns the instance of the XmlParser
+     */
+    public XmlParser convertCDATAToText(boolean convertCData){
+        XmlParserSingleton.INSTANCE.setConvertCDataToText(convertCData);
+        return this;
+    }
     
+    /**
+     * Set Parsing type, FIRST parsing type will parse where the attribute will be retain to its owner tag
+     * SECOND parsing type will parse where the attribute will be on the parent tag
+     * 
+     * @param parsingType
+     * @return 
+     */
     public XmlParser setXmlParsingType(XmlParsingType parsingType){
         if (parsingType == XmlParsingType.FIRST) {
             XmlParserSingleton.INSTANCE.setXmlParsingType(XmlParserSingleton.XmlParsingType.FIRST);
@@ -266,6 +295,7 @@ public class XmlParser{
      * @return returns the instance of the XmlParser
      */
     public XmlParser xmlToObject(String xmlString){
+        this.memoryCosumption = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L;
         obj = XmlParserSingleton.INSTANCE.xmlToObject(xmlString);
         return this;
     }
@@ -329,5 +359,8 @@ public class XmlParser{
      */
     public Object toObject(){
         return obj;
+    }
+    public long getTotalMemory(){
+        return ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024L) - this.memoryCosumption;
     }
 }

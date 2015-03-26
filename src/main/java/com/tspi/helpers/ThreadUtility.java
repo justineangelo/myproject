@@ -1,25 +1,27 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.tspi.helpers;
 
 import com.tspi.template.CoreTemplate;
+import com.tspi.helpers.ThreadContent;
+import java.util.ArrayList;
 
 /**
  *
  * @author JRANGEL
  */
-public class ThreadHelper extends CoreTemplate implements Runnable{
-
+public class ThreadUtility extends CoreTemplate implements Runnable{
+    private ArrayList<ThreadContent> threadContents;
     private Thread t = null;
     private int priority = 5;
     private String threadName = "";
-    public ThreadHelper(String threadName){
+    public ThreadUtility(String threadName){
         this.loggerDebug("INITIALIZED THREAD : " + threadName);
         this.threadName = threadName;
     }
+    
+    public void setThreadContents(ArrayList<ThreadContent> threadContents){
+        this.threadContents = threadContents;
+    }
+    
     @Override
     public void run() {
         this.loggerDebug("START RUN THREAD " + this.threadName);
