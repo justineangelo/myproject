@@ -14,7 +14,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTH
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 DEALINGS IN THE SOFTWARE.
 */
-package com.tspi.helpers;
+package com.pgc.xmp.utilities;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -23,14 +23,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import org.json.simple.*;
 
 /**
- *
+ * Request Helper :D
+ * 
  * @author JRANGEL
  */
 public class RequestHelper{
     public enum RequestMethod{
         POST, GET
+    }
+    public enum ContentType{
+        JSON, XML, DEFAULT
     }
     private static final RequestHelper self = new RequestHelper();
    
@@ -39,6 +44,9 @@ public class RequestHelper{
     private int requestTimeout;//default request timeout in miliseconds
     private int readTimeout;//default read timeout in mili seconds
     private HashMap<String, String> requestData;
+    private HashMap<String, String> requestProperty;
+    private ContentType ct;
+    private String requestRawData;
     
     private boolean errorOccurred = false;
     private String errorDescription = "";
@@ -49,6 +57,15 @@ public class RequestHelper{
     private RequestHelper(){
         //Private Constructor
         this.setDefault();
+    }
+    
+    /**
+     * Creates new instance of the Request Helper
+     * 
+     * @return returns the new instance of the Request Helper
+     */
+    public static RequestHelper getNewInstance(){
+        return new RequestHelper();
     }
     /**
      * 
@@ -66,6 +83,9 @@ public class RequestHelper{
         this.requestTimeout = 5000;// 10seconds request default
         this.readTimeout = 5000;//10 seconds read default
         this.requestData = null;
+        this.requestProperty = null;
+        this.ct = ContentType.DEFAULT;
+        this.requestRawData = "";
     }
     /**
      * 
@@ -77,6 +97,17 @@ public class RequestHelper{
         return this;
     }
     /**
+     * Set the request property
+     * 
+     * @param requestPropety
+     * @return instance of the Request Helper
+     */
+    public RequestHelper setRequestProperty(HashMap<String, String> requestPropety){
+        this.requestProperty = requestPropety;
+        return this;
+    }
+    /**
+     * Set the request method
      * 
      * @param rt
      * @return instance of the Request Helper
@@ -101,6 +132,21 @@ public class RequestHelper{
      */
     public RequestHelper setRequestReadTimeout(int timeout){
         this.readTimeout = timeout;
+        return this;
+    }
+    
+    public RequestHelper setContentType(ContentType ct){
+        this.ct = ct;
+        return this;
+    }
+    /**
+     * Set request raw data preferably a raw string of json/xml
+     * 
+     * @param requestRawData
+     * @return instance of the Request Helper
+     */
+    public RequestHelper setRequestRawData(String requestRawData){
+        this.requestRawData = requestRawData;
         return this;
     }
     /**
@@ -191,6 +237,17 @@ public class RequestHelper{
             URL url = new URL(this.strURI);
             connection =  (HttpURLConnection)url.openConnection();
             connection.setRequestProperty("Accept", "*/*");
+            //set request property
+            if(this.ct == ContentType.JSON){
+                connection.setRequestProperty("Content-Type", "applicaiton/json");
+            }else if(this.ct == ContentType.XML){
+                connection.setRequestProperty("Content-Type", "applicaiton/xml");
+            }
+            if(this.requestProperty != null){
+                for (HashMap.Entry<String, String> entry : this.requestProperty.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
             connection.setConnectTimeout(this.requestTimeout);
             connection.setReadTimeout(this.readTimeout);
             connection.setAllowUserInteraction(false);
@@ -198,13 +255,20 @@ public class RequestHelper{
                 connection.setRequestMethod("GET");
             }else if(this.rt == RequestMethod.POST){
                 connection.setRequestMethod("POST");
-                if(this.requestData != null){
+                if(this.requestData != null || this.requestRawData.length()>0){
                     connection.setDoOutput(true);
-                    try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-                        wr.writeBytes(sBRD.toString());
+                    try {
+                        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                        if(this.requestRawData.length()>0){
+                            wr.writeBytes(this.requestRawData);
+                        }else{
+                            wr.writeBytes(sBRD.toString());
+                        }
+                        
                         wr.flush();
                         wr.close();
                     }catch(Exception e){
+                        System.out.println("ERROR Closing Connection " + e.getMessage());
                         this.errorOccurred = true;
                         this.errorDescription = "closing connection " + e.getMessage();
                     }
@@ -223,13 +287,20 @@ public class RequestHelper{
                     int status = this.headerResponseCode = connection.getResponseCode();
                     this.headerResponseDesc = connection.getResponseMessage();
                     if(status == 200){
-                        String outString;
-                        try ( //success
-                            InputStream inputStream = connection.getInputStream()) {
+                        String outString = "";
+                        try {
+                            InputStream inputStream = connection.getInputStream();
                             outString = this.streamReader(inputStream);
-                            this.responseString = outString;
+                            
                             inputStream.close();
+                        } catch(Exception e){
+                            System.out.println("ERROR : " + e.getMessage());
+                            errorOccurred = true;
+                            errorDescription = e.getMessage();
+                        } finally{
+                            
                         }
+                        this.responseString = outString;
                     }else{
                         this.errorOccurred = true;
                         this.errorDescription = "Response Code " + status + " Response Description : " + connection.getResponseMessage();
