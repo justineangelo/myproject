@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import org.json.simple.*;
 
@@ -222,9 +223,9 @@ public class RequestHelper{
                     if(!isFirstAppend){
                         sBRD.append("&");
                     }
-                    sBRD.append(entry.getKey());
+                    sBRD.append(URLEncoder.encode(entry.getKey().toString(), "UTF-8"));
                     sBRD.append("=");
-                    sBRD.append(entry.getValue());
+                    sBRD.append(URLEncoder.encode(entry.getValue().toString(), "UTF-8"));
                     isFirstAppend = false;
                 }
             }
@@ -239,9 +240,9 @@ public class RequestHelper{
             connection.setRequestProperty("Accept", "*/*");
             //set request property
             if(this.ct == ContentType.JSON){
-                connection.setRequestProperty("Content-Type", "applicaiton/json");
+                connection.setRequestProperty("Content-Type", "application/json");
             }else if(this.ct == ContentType.XML){
-                connection.setRequestProperty("Content-Type", "applicaiton/xml");
+                connection.setRequestProperty("Content-Type", "application/xml");
             }
             if(this.requestProperty != null){
                 for (HashMap.Entry<String, String> entry : this.requestProperty.entrySet()) {
